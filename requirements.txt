@@ -1,0 +1,3 @@
+spacy
+nltk
+spacy_udpipe

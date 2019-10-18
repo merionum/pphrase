@@ -4,7 +4,7 @@ For now only extraction is available.
 
 It has been tested for Russian only for now but it is designed to be a language agnostic tool.
 
-pphrase is capable of working with prepositions which are parts of funtional words and derivative prepositions. In order to do so you should provide a list of any (or both) of them when initialzing the extractor.
+pphrase is capable of working with prepositions which are parts of funсtional words and derivative prepositions. In order to do so you should provide a list of any (or both) of them when initialzing the extractor.
 
 Инструмент для извлечения и (в будущем) семантической разметки предложных конструкций. Есть возможность задавать список служебных слов с предлогами (для их исключения) и список производных предлогов (для их добавления).
 

@@ -21,18 +21,14 @@ class Extractor:
                  lang='ru', function_words=None, derivative_prepositions=None):
 
         print('Initializing...')
-        self.nlp = spacy_udpipe.load_from_path(lang, udpipe_model)
+        self.lang = lang
+        self.nlp = spacy_udpipe.load_from_path(self.lang, udpipe_model)
         self.function_words = function_words
         if self.function_words is not None:
-            self.context_funct = max([len(p.split()) for p in self.function_words]) - 1
-            if lang == 'ru':
-                self.function_words = self.__prep_cyr_words(self.function_words)
-
+            self.function_words, self.context_funct = self.__prep_dictionary(self.function_words)
         self.derivative_prepositions = derivative_prepositions
-        if self.derivative_prepositions is not None:
-            self.context_der = max([len(p.split()) for p in self.derivative_prepositions]) - 1
-            if lang == 'ru':
-                self.function_words = self.__prep_cyr_words(self.function_words)
+        if derivative_prepositions is not None:    
+            self.derivative_prepositions, self.context_der = self.__prep_dictionary(self.derivative_prepositions)
             if self.function_words is not None:
                 self.derivative_prepositions = [p for p in self.derivative_prepositions
                                                 if p not in self.function_words]
@@ -43,6 +39,12 @@ class Extractor:
             tokens[tok_id] = re.sub('[^а-яё]+', ' ', tokens[tok_id].lower().strip())
         tokens = handle_cyrillic_yo(tokens)
         return tokens
+
+    def __prep_dictionary(self, list_phrases):
+        max_context = max([len(p.split()) for p in list_phrases]) - 1
+        if self.lang == 'ru':
+            list_phrases = self.__prep_cyr_words(list_phrases)
+        return list_phrases, max_context
 
     def __process_text(self, text: str):
         tokens = text.replace('\n', '.').strip().lower().split()
@@ -100,6 +102,14 @@ class Extractor:
             if self.__order_consistent():
                 return True
         return False
+
+    def __get_derivative(self):
+        orig_con_idx = [0, len(self.deriv_context)-1]
+        while self.deriv_context[orig_con_idx[0]].text != self.found_derivative[0]:
+            orig_con_idx[0] += 1
+        while self.deriv_context[orig_con_idx[1]].text != self.found_derivative[-1]:
+            orig_con_idx[1] -= 1
+        return self.deriv_context[orig_con_idx[0]:orig_con_idx[1]+1]
     
     def __add_phrase_to_output(self, preposition, phrase):
         if preposition not in self.prep_phrases:
@@ -118,11 +128,10 @@ class Extractor:
             slave = False
         return slave
 
-    def __remember_preps(self, derivative):
+    def __mem_preps(self, derivative):
         for tok in derivative:
             if tok.pos_ == 'ADP':
                 self.extracted_idx.add(tok.i)
-
 
     def extract_phrases(self, text: str):
         self.doc = self.nlp(self.__process_text(text))
@@ -133,15 +142,10 @@ class Extractor:
             self.sent = sent
             for token in self.sent:
                 if token.pos_ != 'ADP' or token.i in self.extracted_idx or \
-                   self.function_words is None or (self.function_words and self.__is_part_functional(token)):
+                (self.function_words is not None and self.__is_part_functional(token)):
                     continue
                 if self.derivative_prepositions is not None and self.__is_part_derivative(token):
-                    orig_con_idx = [0, len(self.deriv_context)-1]
-                    while self.deriv_context[orig_con_idx[0]].text != self.found_derivative[0]:
-                        orig_con_idx[0] += 1
-                    while self.deriv_context[orig_con_idx[1]].text != self.found_derivative[-1]:
-                        orig_con_idx[1] -= 1
-                    derivative = self.deriv_context[orig_con_idx[0]:orig_con_idx[1]+1]
+                    derivative = self.__get_derivative()
                     if derivative[-1].pos_ == 'ADP':
                         slave = derivative[-1].head
                     if derivative[-1].pos_ != 'ADP' or (derivative[-1].pos_ == 'ADP' and slave in derivative):
@@ -153,9 +157,9 @@ class Extractor:
                         extracted_phrase = extracted_phrase[1:]
                     preposition = ' '.join(self.found_derivative)
                     self.__add_phrase_to_output(preposition, ' '.join(extracted_phrase))
-                    self.__remember_preps(derivative)
+                    self.__mem_preps(derivative)
                     continue
                 extracted_phrase = ' '.join([token.head.head.text, token.text, token.head.text])
                 self.__add_phrase_to_output(token.text, extracted_phrase)
-                self.__remember_preps([token])
+                self.__mem_preps([token])
         return self.prep_phrases

@@ -1,3 +1,7 @@
 __pycache__
 .DS_Store
 .udpipe
+*.ipynb
+*.txt
+*.udpipe
+*.ipynb

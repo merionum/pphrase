@@ -1,1 +1,1 @@
-include src/dictionaries/ru/*.txt
+include pphrase/dictionaries/ru/*.txt

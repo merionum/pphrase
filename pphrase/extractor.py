@@ -26,7 +26,7 @@ class Extractor:
                                 if t not in self.functionals]
 
     def __load_from_path(self, lang, filename):
-        return pkgutil.get_data('pphrase', f'dictionaries/{lang}/{filename}.txt') \
+        return pkgutil.get_data('pphrase', f'dictionaries/{lang}_{filename}.txt') \
                       .decode().splitlines()
 
     def __prep_cyr_words(self, tokens):

@@ -1,14 +1,14 @@
-from distutils.core import setup
+from setuptools import setup
 setup(
   name = 'pphrase',
   packages = ['pphrase'],
-  version = '0.2.4',
+  version = '0.2.5',
   license='MIT', 
   description = 'Prepositional phrases extraction and semantics',
   author = 'Vadim Gudkov',
   author_email = 'vadim0006@gmail.com',
   url = 'https://github.com/merionum/pphrase',
-  download_url = 'https://github.com/merionum/pphrase/archive/v_024.tar.gz',
+  download_url = 'https://github.com/merionum/pphrase/archive/v_025.tar.gz',
   keywords = ['prepositional phrases', 'предложные конструкции', 'nlp'],
   install_requires=[
           'nltk',

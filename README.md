@@ -2,11 +2,11 @@
 pphrase is a tool which extracts and (in the close future) semantically labels prepositional phrases in any given text.
 For now only extraction is available.
 
-It has been tested for Russian only for now but it is designed to be a language agnostic tool.
+It is a language agnostic tool but is primarily designed for slavic languages.
 
 pphrase is capable of working with prepositions which are parts of funсtional words and derivative prepositions. In order to do so you should provide a list of any (or both) of them when initialzing the extractor.
 
-Инструмент для извлечения и (в будущем) семантической разметки предложных конструкций. Есть возможность задавать список служебных слов с предлогами (для их исключения) и список производных предлогов (для их добавления).
+It is important to mention that the prepositional phrases here are considered to be a trinary union of the preposition, its host and the dependent (as in "jump over dog").
 
   - Initialize pphrase extractor with model and lists of functional words and derivatives (if needed)
   - Start phrases extraction
@@ -26,6 +26,21 @@ Apart from the dependencies pphrase requires a [UDPipe model](https://ufal.mff.c
 $ pip install pphrase
 ```
 
+#### Example for English
+```
+import pphrase
+
+text = 'the quick brown fox jumped over the lazy dog'
+
+udpipe_model='models/english-ewt-ud-2.4-190531.udpipe'
+
+ex = pphrase.Extractor(udpipe_model=udpipe_model, lang='en')
+ex.extract_phrases(text)
+
+>>>   {'over': ['jumped over dog']}
+``` 
+
+#### Example for Russian 
 ```
 import pphrase
 

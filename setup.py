@@ -17,7 +17,7 @@ setup(
           'pymorphy2',
           'numpy',
       ],
-  package_data={'static':[*]},
+  package_data={'static':['*']},
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Topic :: Software Development :: Build Tools',

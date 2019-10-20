@@ -18,11 +18,9 @@ pphrase is capable of working with prepositions which are parts of funсtional w
     ```
 
 
-#### Installation
+## Installation
 
-pphrase requires [NLTK](https://www.nltk.org),       [spacy_udpipe](https://pypi.org/project/spacy-udpipe/) and a [UDPipe model](https://ufal.mff.cuni.cz/udpipe/models) to run.
-
-Install the dependencies and initialize the extractor.
+Apart from the dependencies pphrase requires a [UDPipe model](https://ufal.mff.cuni.cz/udpipe/models) to run. Get one before initializing the extractor!
 
 ```sh
 $ pip install pphrase
@@ -31,9 +29,9 @@ $ pip install pphrase
 ```
 import pphrase
 
-function_words = ['без умолку', 'в изобилии', 'во весь дух',  'за деньги']
-derivative_phrases = ['без согласования с', 'вблизи ото', 'в преддверье',
-                      'в одной из', 'лицом к лицу с']
+functionals = ['без умолку', 'в изобилии', 'во весь дух',  'за деньги']
+derivatives = ['без согласования с', 'вблизи ото', 'в преддверье',
+               'в одной из', 'лицом к лицу с']
 
 text = 'В одной из отдаленных улиц Москвы, в сером доме с белыми колоннами, \
         антресолью и покривившимся балконом, жила некогда барыня, вдова, \
@@ -42,18 +40,18 @@ text = 'В одной из отдаленных улиц Москвы, в сер
         годы своей скупой и скучающей старости. День ее, нерадостный и ненастный, \
         давно прошел; но и вечер ее был чернее ночи.'
 
-model_path='models/russian-syntagrus-ud-2.4-190531.udpipe'
+udpipe_model='models/russian-syntagrus-ud-2.4-190531.udpipe'
 
-ex = pphrase.Extractor(udpipe_model=model_path, lang='ru',
-                       function_words=function_words,
+ex = pphrase.Extractor(udpipe_model=udpipe_model, lang='ru',
+                       functionals=function_words,
                        derivative_prepositions=derivative_prepositions)
 ex.extract_phrases(text)
 
->>>   {'в одной из': ['в одной из улиц'],
+>>>   {'в одной из': ['жила в одной из улиц'],
        'в': ['жила в доме', 'служили в петербурге'],
-       'с': ['доме с колоннами']}
+       'с': ['доме с колоннами', 'доме с покривившимся']}
 ```
 
-### Todos
+#### Todos
 
  - Add semantic processing

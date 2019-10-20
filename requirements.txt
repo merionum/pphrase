@@ -1,3 +1,5 @@
 spacy
 nltk
 spacy_udpipe
+pymorphy2
+numpy

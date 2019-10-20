@@ -4,7 +4,7 @@ For now only extraction is available.
 
 It is a language agnostic tool but is primarily designed for slavic languages.
 
-pphrase is capable of working with prepositions which are parts of funсtional words and derivative prepositions. In order to do so you should provide a list of any (or both) of them when initialzing the extractor.
+pphrase is capable of working with prepositions which are parts of funсtional words and derivative prepositions (such dictionaries are available for Russian only for now).
 
 It is important to mention that the prepositional phrases here are considered to be a trinary union of the preposition, its host and the dependent (as in "jump over dog").
 
@@ -44,10 +44,6 @@ ex.extract_phrases(text)
 ```
 import pphrase
 
-functionals = ['без умолку', 'в изобилии', 'во весь дух',  'за деньги']
-derivatives = ['без согласования с', 'вблизи ото', 'в преддверье',
-               'в одной из', 'лицом к лицу с']
-
 text = 'В одной из отдаленных улиц Москвы, в сером доме с белыми колоннами, \
         антресолью и покривившимся балконом, жила некогда барыня, вдова, \
         окруженная многочисленною дворней. Сыновья ее служили в Петербурге, \
@@ -57,9 +53,7 @@ text = 'В одной из отдаленных улиц Москвы, в сер
 
 udpipe_model='models/russian-syntagrus-ud-2.4-190531.udpipe'
 
-ex = pphrase.Extractor(udpipe_model=udpipe_model, lang='ru',
-                       functionals=function_words,
-                       derivative_prepositions=derivative_prepositions)
+ex = pphrase.Extractor(udpipe_model=udpipe_model, lang='ru')
 ex.extract_phrases(text)
 
 >>>   {'в одной из': ['жила в одной из улиц'],

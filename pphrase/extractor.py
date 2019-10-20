@@ -1,4 +1,5 @@
 from nltk.tokenize import sent_tokenize, word_tokenize
+import pkgutil
 import numpy as np
 import spacy_udpipe
 import re
@@ -19,8 +20,8 @@ class Extractor:
             self.derivatives = [t for t in self.derivatives
                                 if t not in self.functionals]
         if self.lang == 'ru':
-            with open('ru_simple.txt', 'r') as w:
-                self.base_preps = self.__prep_cyr_words(w.read().splitlines())
+            self.base_preps = pkgutil.get_data('pphrase', 'ru_simple.txt') \
+                                     .decode().splitlines()
 
     def __prep_cyr_words(self, tokens):
         for tok_id in range(len(tokens)):

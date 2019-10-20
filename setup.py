@@ -17,6 +17,7 @@ setup(
           'pymorphy2',
           'numpy',
       ],
+  include_package_data=True,
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Topic :: Software Development :: Build Tools',

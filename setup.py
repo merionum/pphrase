@@ -2,13 +2,13 @@ from setuptools import setup
 setup(
   name = 'pphrase',
   packages = ['pphrase'],
-  version = '0.2.5',
+  version = '0.2.6',
   license='MIT', 
   description = 'Prepositional phrases extraction and semantics',
   author = 'Vadim Gudkov',
   author_email = 'vadim0006@gmail.com',
   url = 'https://github.com/merionum/pphrase',
-  download_url = 'https://github.com/merionum/pphrase/archive/v_025.tar.gz',
+  download_url = 'https://github.com/merionum/pphrase/archive/v_026.tar.gz',
   keywords = ['prepositional phrases', 'предложные конструкции', 'nlp'],
   install_requires=[
           'nltk',
@@ -17,7 +17,7 @@ setup(
           'pymorphy2',
           'numpy',
       ],
-  package_data={'static':['*']},
+  include_package_data=True,
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Topic :: Software Development :: Build Tools',

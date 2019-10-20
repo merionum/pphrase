@@ -19,7 +19,7 @@ class Extractor:
             self.derivatives = [t for t in self.derivatives
                                 if t not in self.functionals]
         if self.lang == 'ru':
-            with open('pphrase/ru_simple.txt', 'r') as w:
+            with open('ru_simple.txt', 'r') as w:
                 self.base_preps = self.__prep_cyr_words(w.read().splitlines())
 
     def __prep_cyr_words(self, tokens):

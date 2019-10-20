@@ -13,15 +13,21 @@ class Extractor:
     def __init__(self, udpipe_model, lang, functionals=None, derivatives=None):
         self.lang = lang
         self.nlp = spacy_udpipe.load_from_path(self.lang, udpipe_model)
+
+        if lang == 'ru':
+            functionals = self.__load_from_path(lang, 'functionals')
+            derivatives = self.__load_from_path(lang, 'derivatives')
+            self.base_preps = self.__load_from_path(lang, 'simple')
         self.functionals, self.context_funct = self.__prep_entities(functionals)
         self.derivatives, self.context_der = self.__prep_entities(derivatives)
 
         if self.functionals is not None:
             self.derivatives = [t for t in self.derivatives
                                 if t not in self.functionals]
-        if self.lang == 'ru':
-            self.base_preps = pkgutil.get_data('pphrase', 'ru_simple.txt') \
-                                     .decode().splitlines()
+
+    def __load_from_path(self, lang, filename):
+        return pkgutil.get_data('pphrase', f'dictionaries/{lang}/{filename}.txt') \
+                      .decode().splitlines()
 
     def __prep_cyr_words(self, tokens):
         for tok_id in range(len(tokens)):

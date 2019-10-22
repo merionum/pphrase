@@ -4,7 +4,7 @@ For now only extraction is available.
 
 It is a language agnostic tool but is primarily designed for slavic languages.
 
-pphrase is capable of working with prepositions which are parts of funсtional words and derivative prepositions (such dictionaries are available for Russian only for now).
+pphrase is capable of working with prepositions which are parts of funсtional words and derivative prepositions (such dictionaries are available for Russian only for now but can be manually provided as a list as well).
 
 It is important to mention that the prepositional phrases here are considered to be a trinary union of the preposition, its host and the dependent (as in "jump over dog").
 

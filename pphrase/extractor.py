@@ -4,6 +4,8 @@ import numpy as np
 import spacy_udpipe
 import re
 
+LANGS = ['be', 'ru']
+
 
 class Extractor:
     """
@@ -14,7 +16,7 @@ class Extractor:
         self.lang = lang
         self.nlp = spacy_udpipe.load_from_path(self.lang, udpipe_model)
 
-        if lang == 'ru':
+        if lang in LANGS:
             functionals = self.__load_from_path(lang, 'functionals')
             derivatives = self.__load_from_path(lang, 'derivatives')
             self.base_preps = self.__load_from_path(lang, 'simple')
@@ -31,7 +33,7 @@ class Extractor:
 
     def __prep_cyr_words(self, tokens):
         for tok_id in range(len(tokens)):
-            tokens[tok_id] = re.sub('[^а-яё]+', ' ',
+            tokens[tok_id] = re.sub('[^\w]+', ' ',
                                     tokens[tok_id].lower().strip())
         for phrase in tokens:
             if 'ё' in phrase:
@@ -44,7 +46,7 @@ class Extractor:
         if entity is None:
             return None, None
         max_context = max([len(p.split()) for p in entity]) - 1
-        if self.lang == 'ru':
+        if self.lang in ['be', 'ru']:
             entity = self.__prep_cyr_words(entity)
         return entity, max_context
 
@@ -66,7 +68,7 @@ class Extractor:
             if len(new_sent):
                 new_text.append(' '.join(new_sent))
         text = new_text
-        text = '. '.join([re.sub('[^а-яёa-z0-9\-]+', ' ', sent).strip()
+        text = '. '.join([re.sub('[^\w0-9\-]+', ' ', sent).strip()
                           for sent in text])
         return text
 
@@ -102,9 +104,9 @@ class Extractor:
         if self.derivatives is None:
             return False
         context = self.__get_context(token, self.context_der)
-        found_derivative = list(filter(
-                           lambda x: set(x.split()).issubset(context.text.split()),
-                                self.derivatives))
+
+        found_derivative = list(filter(lambda x: x in context.text
+                                        and token.text in x.split(), self.derivatives))
         if found_derivative:
             self.found_derivative = max(found_derivative, key=len).split()
             self.deriv_context = context
@@ -132,7 +134,8 @@ class Extractor:
 
     def __get_master(self, ancestors, slave):
         if 'VERB' in [t.pos_ for t in ancestors if t]:
-            cands = [t for t in ancestors if (t and t.pos_ == 'VERB')]
+            cands = [t for t in ancestors if (t and t.pos_ == 'VERB'
+                                              and t not in self.derivative)]
         else:
             cands = [t for t in ancestors if (slave and t != slave
                      and t not in self.derivative and t)]
@@ -170,14 +173,15 @@ class Extractor:
                     del self.prep_phrases[k]
 
     def extract_phrases(self, text: str):
-        self.doc = self.nlp(self.__process_text(text))
         self.prep_phrases = dict()
-        self.extracted_idx = set()
-        sents = self.doc.sents
+        sents = sent_tokenize(self.__process_text(text))
         for sent in sents:
-            self.sent = sent
+            self.extracted_idx = set()
+            self.doc = self.nlp(sent)
+            self.sent = next(self.doc.sents)
             for token in self.sent:
                 if token.pos_ != 'ADP' or \
+                   token.text not in self.base_preps or \
                    token.i in self.extracted_idx or \
                    self.__is_part_functional(token):
                     continue
@@ -204,7 +208,8 @@ class Extractor:
                     slave = preposition.head
                     master = slave.head
                     phrase = [master, preposition, slave]
+                    self.extracted_idx.add(preposition.i)
                 self.__add_phrase_to_output(preposition, phrase)
-                self.__add_conjuncted(preposition, phrase)
+                # self.__add_conjuncted(preposition, phrase)
         self.__remove_non_pphrases()
         return self.prep_phrases

@@ -4,3 +4,5 @@ __pycache__
 *.ipynb
 *.udpipe
 *.ipynb
+*.egg-info
+*.tar.gz

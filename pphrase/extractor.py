@@ -1,8 +1,8 @@
 from nltk.tokenize import sent_tokenize, word_tokenize
 import pkgutil
 import numpy as np
-import spacy_udpipe
 import re
+import spacy_udpipe
 
 LANGS = ['be', 'ru']
 
@@ -46,7 +46,7 @@ class Extractor:
         if entity is None:
             return None, None
         max_context = max([len(p.split()) for p in entity]) - 1
-        if self.lang in ['be', 'ru']:
+        if self.lang in LANGS:
             entity = self.__prep_cyr_words(entity)
         return entity, max_context
 
@@ -68,7 +68,7 @@ class Extractor:
             if len(new_sent):
                 new_text.append(' '.join(new_sent))
         text = new_text
-        text = '. '.join([re.sub('[^\w0-9\-]+', ' ', sent).strip()
+        text = '. '.join([re.sub('[^\w0-9\-\,]+', ' ', sent).strip()
                           for sent in text])
         return text
 
@@ -147,7 +147,14 @@ class Extractor:
         return tokens[np.argmin([abs(self.der_last.i - t.i) for t in tokens])]
 
     def __add_phrase_to_output(self, preposition, phrase):
-        phrase = ' '.join([t.text for t in phrase])
+        phrase = [t.text for t in phrase]
+        for tok in phrase:
+            if any(char.isdigit() for char in tok):
+                if len(tok) == 4:
+                    phrase[phrase.index(tok)] = 'YEAR'
+                else:
+                    phrase[phrase.index(tok)] = 'NUM'
+        phrase = ' '.join(phrase)
         if type(preposition) != str:
             preposition = preposition.text
         if preposition not in self.prep_phrases:
@@ -159,15 +166,8 @@ class Extractor:
             if tok.pos_ == 'ADP':
                 self.extracted_idx.add(tok.i)
 
-    def __add_conjuncted(self, preposition, phrase):
-        conjuncts = phrase[-1].conjuncts
-        if len(conjuncts):
-            for c in conjuncts:
-                output = phrase[:2] + [c]
-                self.__add_phrase_to_output(preposition, output)
-
     def __remove_non_pphrases(self):
-        if self.lang == 'ru':
+        if self.lang in LANGS:
             for k in list(self.prep_phrases):
                 if len(k.split()) == 1 and k not in self.base_preps:
                     del self.prep_phrases[k]
@@ -181,7 +181,6 @@ class Extractor:
             self.sent = next(self.doc.sents)
             for token in self.sent:
                 if token.pos_ != 'ADP' or \
-                   token.text not in self.base_preps or \
                    token.i in self.extracted_idx or \
                    self.__is_part_functional(token):
                     continue
@@ -210,6 +209,5 @@ class Extractor:
                     phrase = [master, preposition, slave]
                     self.extracted_idx.add(preposition.i)
                 self.__add_phrase_to_output(preposition, phrase)
-                # self.__add_conjuncted(preposition, phrase)
         self.__remove_non_pphrases()
         return self.prep_phrases

@@ -1,7 +1,6 @@
 from nltk.tokenize import sent_tokenize, word_tokenize
 import pkgutil
 import numpy as np
-import re
 import spacy_udpipe
 
 LANGS = ['be', 'ru']
@@ -32,14 +31,16 @@ class Extractor:
                       .decode().splitlines()
 
     def __prep_cyr_words(self, tokens):
-        for tok_id in range(len(tokens)):
-            tokens[tok_id] = re.sub('[^\w]+', ' ',
-                                    tokens[tok_id].lower().strip())
+        tokens = [tok.lower().strip() for tok in tokens]
         for phrase in tokens:
-            if 'ё' in phrase:
-                replaced_e = phrase.replace('ё', 'е')
-                if replaced_e not in tokens:
-                    tokens.append(replaced_e)
+            for char in ['ё', '-']:
+                if char in phrase:
+                    if char == 'ё':
+                        replaced = phrase.replace('ё', 'е')
+                    else:
+                        replaced = phrase.replace('-', ' ')
+                    if replaced not in tokens:
+                        tokens.append(replaced)
         return tokens
 
     def __prep_entities(self, entity):
@@ -50,26 +51,21 @@ class Extractor:
             entity = self.__prep_cyr_words(entity)
         return entity, max_context
 
+    def __unpack(self, nested):
+        return [item for sublist in nested for item in sublist]
+
     def __process_text(self, text: str):
-        tokens = text.replace('\n', '.').strip().lower().split()
-        for tok in tokens:
-            if len(tok) < 5 and ((tok[0] == tok[-1] == '"') or
-                                 (tok.endswith(')'))):
-                tokens.remove(tok)
-        text = [sent.split('...') for sent in sent_tokenize(' '.join(tokens))]
-        text = [item for sublist in text for item in sublist]
-        new_text = []
-        for sent in text:
-            new_sent = []
-            for word in word_tokenize(sent):
-                if len(word) <= 2 and word.endswith('.'):
-                    continue
-                new_sent.append(word)
-            if len(new_sent):
-                new_text.append(' '.join(new_sent))
-        text = new_text
-        text = '. '.join([re.sub('[^\w0-9\-\,]+', ' ', sent).strip()
-                          for sent in text])
+        text = text.strip().strip('\n').strip().split('\n')
+        text = self.__unpack([sent_tokenize(p) for p in text])
+        for i in range(len(text)):
+            tokens = text[i].split()
+            for tok in tokens:
+                if (len(tok) < 5 and
+                   ((tok[0] == tok[-1] == '"') or
+                    (tok[-1] == ')'))) or \
+                 (len(tok) <= 2 and tok.endswith('.')):
+                    tokens.remove(tok)
+            text[i] = ' '.join([t for t in tokens if len(t)])
         return text
 
     def __get_context(self, token, window):
@@ -85,6 +81,7 @@ class Extractor:
         if self.functionals is None:
             return False
         context = self.__get_context(token, self.context_funct).text
+
         if len(context.split('.')) > 1:
             context = context.split('.')[1]
         candidates = list(filter(lambda x: x if x in context else None,
@@ -174,11 +171,14 @@ class Extractor:
 
     def extract_phrases(self, text: str):
         self.prep_phrases = dict()
-        sents = sent_tokenize(self.__process_text(text))
+        sents = self.__process_text(text)
         for sent in sents:
             self.extracted_idx = set()
             self.doc = self.nlp(sent)
-            self.sent = next(self.doc.sents)
+            try:
+                self.sent = next(self.doc.sents)
+            except StopIteration:
+                continue
             for token in self.sent:
                 if token.pos_ != 'ADP' or \
                    token.i in self.extracted_idx or \
@@ -206,6 +206,8 @@ class Extractor:
                     preposition = token
                     slave = preposition.head
                     master = slave.head
+                    if slave == master:
+                        continue
                     phrase = [master, preposition, slave]
                     self.extracted_idx.add(preposition.i)
                 self.__add_phrase_to_output(preposition, phrase)

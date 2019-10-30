@@ -238,7 +238,7 @@ class Extractor:
                         host = self.__get_host(list(self.derivative[0].ancestors),
                                                         dependant)
                     full_dependant = self.__get_related_np(dependant, self.derivative)
-                    if not all([dependant, host]):
+                    if not all([dependant, host, full_dependant]):
                         continue
                     preposition = self.derivative
                     self.__mem_derivative()

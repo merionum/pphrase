@@ -98,16 +98,15 @@ class Extractor:
         return False
 
     def __is_order_consistent(self):
-        return [word.text for word in self.deriv_context
-                if word.text in self.found_derivative] == self.found_derivative
+        return [word.text.lower() for word in self.deriv_context
+                if word.text.lower() in self.found_derivative] == self.found_derivative
 
     def __is_part_derivative(self, token):
         if self.derivatives is None:
             return False
         context = self.__get_context(token, self.context_der)
-
-        found_derivative = list(filter(lambda x: x in context.text
-                                        and token.text in x.split(), self.derivatives))
+        found_derivative = list(filter(lambda x: x in context.text.lower()
+                                        and token.text.lower() in x.split(), self.derivatives))
         if found_derivative:
             self.found_derivative = max(found_derivative, key=len).split()
             self.deriv_context = context
@@ -117,9 +116,9 @@ class Extractor:
 
     def __get_derivative(self):
         or_id = [0, len(self.deriv_context)-1]
-        while self.deriv_context[or_id[0]].text != self.found_derivative[0]:
+        while self.deriv_context[or_id[0]].text.lower() != self.found_derivative[0]:
             or_id[0] += 1
-        while self.deriv_context[or_id[1]].text != self.found_derivative[-1]:
+        while self.deriv_context[or_id[1]].text.lower() != self.found_derivative[-1]:
             or_id[1] -= 1
         return self.deriv_context[or_id[0]:or_id[1]+1]
 
@@ -158,7 +157,7 @@ class Extractor:
               if t not in preposition]
         if ',' in [t.text for t in np]:
             return False
-        if len(np) <= 6:
+        if len(np) <= 12:
             return np
         else:
             return [token]
@@ -172,7 +171,6 @@ class Extractor:
         phrase.extend(full_dependant)
         phrase.extend([host])
         phrase = [t.text for t in sorted(phrase, key=lambda x: x.i)]
-
         for tok in phrase:
             if any(char.isdigit() for char in tok):
                 if len(tok) == 4:
@@ -200,12 +198,16 @@ class Extractor:
         for tok in list(self.derivative):
             if tok.pos_ == 'ADP':
                 self.extracted_idx.add(tok.i)
+    
+    def __leave_prep(self, prep):
+        if len(prep.split()) == 1 and prep not in self.base_preps:
+            return False
+        return True
 
     def __remove_non_pphrases(self):
         if self.lang in LANGS:
             self.prep_phrases[:] = (k for k in self.prep_phrases
-                                    if len(k['prep'].split()) == 1
-                                    and k not in self.base_preps)
+                                    if self.__leave_prep(k['prep']))
 
     def extract_phrases(self, text: str):
         self.prep_phrases = list()
@@ -235,10 +237,9 @@ class Extractor:
                         dependant = self.__get_closest(children) 
                         host = self.__get_host(list(self.derivative[0].ancestors),
                                                         dependant)
-                        full_dependant = self.__get_related_np(dependant, self.derivative)
+                    full_dependant = self.__get_related_np(dependant, self.derivative)
                     if not all([dependant, host]):
                         continue
-                    phrase = [host, self.derivative, dependant]
                     preposition = self.derivative
                     self.__mem_derivative()
                 else:

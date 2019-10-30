@@ -10,11 +10,15 @@ It is important to mention that the prepositional phrases here are considered to
 
   - Initialize pphrase extractor with model and lists of functional words and derivatives (if needed)
   - Start phrases extraction
-  - Receive a dictionary of the following format:
+  - Receive a list of dictionaries of the following format:
     
     ```python
-    {'preposition_1': ['phrase_1', 'phrase_2', ...],
-     'preposition_2': ['phrase_1', 'phrase_2', ...]}
+    [{'phrase': 'prepositional_phrase (eg. jumped over the lazy dog)', 
+      'host': 'host (eg. jumped)',
+      'prep': 'preposition (eg. over)',
+      'dependant': 'dependant (eg.dog)',
+       ...
+       'other tags and lemmas if tag = True']
     ```
 
 
@@ -53,12 +57,29 @@ text = 'В одной из отдаленных улиц Москвы, в сер
 
 udpipe_model='models/russian-syntagrus-ud-2.4-190531.udpipe'
 
-ex = pphrase.Extractor(udpipe_model=udpipe_model, lang='ru')
+ex = pphrase.Extractor(udpipe_model=udpipe_model, lang='ru', tag=True)
 ex.extract_phrases(text)
 
->>>   {'в одной из': ['жила в одной из улиц'],
-       'в': ['жила в доме', 'служили в петербурге'],
-       'с': ['доме с колоннами', 'доме с покривившимся']}
+>>>   [{'phrase': 'В одной из отдаленных улиц Москвы жила',
+        'host': 'жила',
+        'prep': 'В одной из',
+        'dependant': 'улиц',
+        'host_pos': 'VERB',
+        'host_lemma': 'жить',
+        'dependant_case': 'gent',
+        'dependant_pos': 'NOUN',
+        'dependant_num': 'plur',
+        'dependant_lemma': 'улица'},
+       {'phrase': 'служили в Петербурге',
+        'host': 'служили',
+        'prep': 'в',
+        'dependant': 'Петербурге',
+        'host_pos': 'VERB',
+        'host_lemma': 'служить',
+        'dependant_case': 'loct',
+        'dependant_pos': 'NOUN',
+        'dependant_num': 'sing',
+        'dependant_lemma': 'петербург'}]
 ```
 
 #### Todos

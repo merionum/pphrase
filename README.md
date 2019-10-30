@@ -38,10 +38,13 @@ text = 'the quick brown fox jumped over the lazy dog'
 
 udpipe_model='models/english-ewt-ud-2.4-190531.udpipe'
 
-ex = pphrase.Extractor(udpipe_model=udpipe_model, lang='en')
+ex = pphrase.Extractor(udpipe_model=udpipe_model, lang='en', tag=False)
 ex.extract_phrases(text)
 
->>>   {'over': ['jumped over dog']}
+>>>   [{'phrase': 'jumped over the lazy dog',
+        'host': 'jumped',
+        'prep': 'over',
+        'dependant': 'dog'}]
 ``` 
 
 #### Example for Russian 

@@ -10,7 +10,8 @@ It is important to mention that the prepositional phrases here are considered to
 ## Installation
 1) Install dependancies from requirements
 2) Download [UDPipe model](https://ufal.mff.cuni.cz/udpipe/models) for the target language
-3) Run command :
+3) Download pphrase.py script
+4) Run command :
 
 ```sh
 $ python3 pphrase.py path-to-udpipe-model path-to-input path-to-output format

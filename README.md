@@ -19,12 +19,14 @@ $ python3 pphrase.py path-to-udpipe-model path-to-input path-to-output format
 Available formats: json, csv, tsv
 
 #### Example for Russian
+input.txt contents:
+"Я ехал на перекладных из Тифлиса."
 ```sh
 $ python3 pphrase.py russian-syntagrus-ud-2.5-191206.udpipe input.txt output.json json
 
 ``` 
 ```
-
+output.json contents:
 >>>   [
         {
             "phrase": "ехал на перекладных из Тифлиса",
@@ -43,12 +45,14 @@ $ python3 pphrase.py russian-syntagrus-ud-2.5-191206.udpipe input.txt output.jso
 ]
 ```
 #### Example for English 
+input.txt contents:
+"The quick brown fox jumped over the lazy dog"
 ```sh
 $ python3 pphrase.py english-ewt-ud-2.5-191206.udpipe input.txt output.json json
 
 ``` 
 ```
-
+output.json contents:
 >>>   [{
         "phrase": "jumped over the lazy dog",
         "host": "jumped",

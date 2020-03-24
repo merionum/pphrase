@@ -41,7 +41,6 @@ def get_preps(sent):
 
     preps = {k: v for k, v in preps.items()
              if any([tok.upos == 'ADP' for tok in v[0]])}
-
     return preps
 
 def get_succesors_by_id(sent, id):
@@ -56,27 +55,31 @@ def get_sorted_sent(tokens):
 def get_tok_tags(token):
     return f'PartOfSpeech={token.upos}|{token.feats}'
 
-def get_phrase(prep, p_head, sent):
-    dep = sent[p_head-1]
+def get_phrase(prep, dep_id, sent):
+    dep = sent[dep_id-1]
     host = sent[dep.head-1]
+    bad_host = False
+    members = [dep, host]
+    if host == dep or host.upos == 'PUNCT':
+        bad_host = True
+        members.pop()    
 
     prep_ids = {p.id for p in prep}
-    members_ids = {t.id for t in [dep, host]}
+    members_ids = {t.id for t in members}
 
     dep_succesors = get_succesors_by_id(sent, dep.id)
 
     dep_subtree = [sent[i-1] for i in set().union(*dep_succesors.values())
                                    if i not in prep_ids|members_ids]
 
-    phrase = {'phrase': get_sorted_sent(prep + dep_subtree + [host, dep]),
-              'host': host.form,
+    phrase = {'phrase': get_sorted_sent(prep + dep_subtree + members),
+              'host': host.form if not bad_host else None,
               'preposition': get_sorted_sent(prep),
               'dependant': dep.form,
-              'full_dependant': get_sorted_sent([dep] +
-                                                dep_subtree),
-              'host_tags': get_tok_tags(host),
+              'full_dependant': get_sorted_sent([dep] + dep_subtree),
+              'host_tags': get_tok_tags(host) if not bad_host else None,
               'dependant_tags': get_tok_tags(dep),
-              'host_lemma': host.lemma,
+              'host_lemma': host.lemma if not bad_host else None,
               'dependant_lemma': dep.lemma}
 
     return phrase
@@ -99,8 +102,8 @@ def run(model_file, text_file):
     for line in tqdm((processed+'#').splitlines()):
         if line.startswith('#') and len(sent):
             preps = get_preps(sent)
-            for prep, p_head in preps.values():
-                pphrase = get_phrase(prep, p_head, sent)
+            for prep, dep_id in preps.values():
+                pphrase = get_phrase(prep, dep_id, sent)
                 phrases.append(pphrase)
             sent.clear()
         elif len(line) > 1:

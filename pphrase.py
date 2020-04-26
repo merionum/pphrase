@@ -62,7 +62,7 @@ def get_phrase(prep, dep_id, sent):
     members = [dep, host]
     if host == dep or host.upos == 'PUNCT':
         bad_host = True
-        members.pop()    
+        members.pop()
 
     prep_ids = {p.id for p in prep}
     members_ids = {t.id for t in members}
